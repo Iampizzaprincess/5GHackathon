@@ -12,7 +12,7 @@ import datetime
 
 bets_blueprint = Blueprint(
     "bets", __name__
-    )
+)
 
 @bets_blueprint.route('/sseupdate')
 def update():
