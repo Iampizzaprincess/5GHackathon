@@ -52,6 +52,28 @@ def get_all():
     bets = {bet.id:bet.to_dict() for bet in bets}
     return wrap_response(bets if bets != {} else "I am empty inside")
 
+@bets_blueprint.route('/<id>/approve', methods=['POST'])
+def set_id_approve(id):
+    bet = Bet.query.filter_by(id=id).first()
+    if bet is None:
+        return wrap_response("No bet for you")
+    bet.approved = True
+    db.session.add(bet)
+    db.session.commit()
+    return wrap_response({'success':True})
+
+
+@bets_blueprint.route('/<id>/unapprove', methods=['POST'])
+def set_id_unapprove(id):
+    bet = Bet.query.filter_by(id=id).first()
+    if bet is None:
+        return wrap_response("No bet for you")
+    bet.approved = False
+    db.session.add(bet)
+    db.session.commit()
+    return wrap_response({'success':True})
+
+
 @bets_blueprint.route('/<id>', methods=['GET'])
 def get_bet(id):        
     bet = Bet.query.filter_by(id=id).first()
