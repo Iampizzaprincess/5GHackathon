@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Bundle
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request, make_response, session
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.bets.model import Bet
@@ -72,6 +72,26 @@ def set_id_unapprove(id):
     db.session.add(bet)
     db.session.commit()
     return wrap_response({'success':True})
+
+@bets_blueprint.route('/<id>/like', methods=['POST'])
+def set_id_like(id):
+    betuser = BetUserAssociation.query.filter_by(user_id=session['user_id']).filter_by(bet_id=id).first() 
+    if betuser is None:
+        return wrap_response("No bet for you")
+    betuser.like = True
+    db.session.add(betuser)
+    db.session.commit()
+    return wrap_response({'success': True})
+    
+@bets_blueprint.route('/<id>/unlike', methods=['POST'])
+def set_id_unike(id):
+    betuser = BetUserAssociation.query.filter_by(user_id=session['user_id']).filter_by(bet_id=id).first() 
+    if betuser is None:
+        return wrap_response("No bet for you")
+    betuser.like = False
+    db.session.add(betuser)
+    db.session.commit()
+    return wrap_response({'success': True})
 
 
 @bets_blueprint.route('/<id>', methods=['GET'])
