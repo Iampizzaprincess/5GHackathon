@@ -67,9 +67,9 @@ def get_bet(id):
         if row.decision == BetUserAssociation.OPTION2: nOption2 += 1
         if row.like : nLikes += 1
 
-    bet['undecided'] = nUndecided
-    bet['option1'] = nOption1
-    bet['option2'] = nOption2
-    bet['likes'] = nLikes
+    bet['nUndecided'] = nUndecided
+    bet['nOption1'] = nOption1
+    bet['nOption2'] = nOption2
+    bet['nLikes'] = nLikes
     return wrap_response(bet)
 
