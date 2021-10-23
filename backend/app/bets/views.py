@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Bundle
-from flask import Blueprint, request
+from flask import Blueprint, request, make_response
 import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.bets.model import Bet
@@ -14,10 +14,17 @@ bets_blueprint = Blueprint(
     "bets", __name__
 )
 
+def wrap_response(package):
+    resp = make_response(package)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Credentials'] = 'true'
+    return resp
+
+
 @bets_blueprint.route('/sseupdate')
 def update():
     sse.publish(get_all())
-    return f"pushed update of all bets at {datetime.datetime.now()}"
+    return wrap_response(f"pushed update of all bets at {datetime.datetime.now()}")
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
@@ -27,19 +34,19 @@ def create():
     db.session.add(b)
     db.session.commit()
     update()
-    return {'success': True}
+    return wrap_response({'success': True})
 
 @bets_blueprint.route('/', methods=['GET'])
 def get_all():
     bets = Bet.query.all()
     bets = {bet.id:bet.to_dict() for bet in bets}
-    return bets if bets != {} else "I am empty inside"
+    return wrap_response(bets if bets != {} else "I am empty inside")
 
 @bets_blueprint.route('/<id>', methods=['GET'])
 def get_bet(id):        
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
-        return "No bet for you"
+        return wrap_response("No bet for you")
     bet = bet.to_dict()
 
     stmt = select(
@@ -62,5 +69,5 @@ def get_bet(id):
     bet['for'] = nFor
     bet['against'] = nAgainst
     bet['likes'] = nLikes
-    return bet
+    return wrap_response(bet)
 
