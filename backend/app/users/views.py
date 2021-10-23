@@ -1,32 +1,36 @@
-from flask import Blueprint, request
-from flask.json import jsonify
+from flask import Blueprint, request, session
+from app.util import wrap_response
 from app.users.model import User
 from app import db
+import string
+import random
 
 users_blueprint = Blueprint(
     "users", __name__
 )
 
-@users_blueprint.route('/', methods=['POST'])
-def create():
-    description = request.json.description
-    firstname = request.json.firstname
-    lastname = request.json.lastname
-    b = User(description, firstname, lastname)
-    db.session.add(b)
+@users_blueprint.route('/login', methods=['POST'])
+def login():
+    username = ''.join(random.choice(string.ascii_letters) for i in range(10))
+    firstname = request.json.name
+    lastname = firstname
+    u = User(username, firstname, lastname, 100.0)
+    db.session.add(u)
     db.session.commit()
-    return {'success': True}
+    u = User.query.filter_by(username=username).first()
+    session['user_id'] = u.id
+    return wrap_response({'success': True})
 
 @users_blueprint.route('/', methods=['GET'])
 def get_all():
     users = User.query.all()
-    users = [user.to_dict() for user in users]
-    return jsonify(users) if users != [] else "I am empty inside"
+    users = {i:user.to_dict() for i,user in enumerate(users)}
+    return wrap_response(users if users != {} else "Empty")
 
 @users_blueprint.route('/<id>', methods=['GET'])
 def get_user(id):
     user = User.query.filter_by(id=id).first()
     if user is None:
-        return "No user for you"
-    return user.to_dict()
+        return wrap_response("No user for you")
+    return wrap_response(user.to_dict())
 
