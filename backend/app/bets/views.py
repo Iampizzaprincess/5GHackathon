@@ -14,6 +14,10 @@ bets_blueprint = Blueprint(
     "bets", __name__
 )
 
+def check_req_fields(fields, obj):
+    missing = [i for i, field in enumerate(fields) if field not in obj]
+    return missing
+
 def wrap_response(package):
     resp = make_response(package)
     resp.headers['Access-Control-Allow-Origin'] = '*'
@@ -28,6 +32,10 @@ def update():
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
+    req_fields = ['description', 'approved', 'option1', 'option2']
+    missing = check_req_fields(req_fields, request.json)
+    if len(missing) != 0:
+        return wrap_response("You're missing " + ', '.join(missing))
     description = request.json.description
     approved = request.json.approved
     option1 = request.json.option1
