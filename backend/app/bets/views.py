@@ -1,29 +1,18 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Bundle
-from flask import Blueprint, request, make_response, session
+from flask import Blueprint, request, session
 import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
 from app.bets.model import Bet
 from app.users.model import User
 from app import db
 from app.bets.model import BetUserAssociation
 from app import sse
+from app.util import check_req_fields, wrap_response
 import datetime
 
 bets_blueprint = Blueprint(
     "bets", __name__
 )
-
-def check_req_fields(fields, obj):
-    missing = [i for i, field in enumerate(fields) if field not in obj]
-    return missing
-
-def wrap_response(package):
-    resp = make_response(package)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    resp.headers['Access-Control-Allow-Credentials'] = 'true'
-    return resp
-
 
 @bets_blueprint.route('/sseupdate')
 def update():
@@ -95,7 +84,7 @@ def set_id_unike(id):
 
 
 @bets_blueprint.route('/<id>', methods=['GET'])
-def get_bet(id):        
+def get_bet(id):
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
         return wrap_response("No bet for you")

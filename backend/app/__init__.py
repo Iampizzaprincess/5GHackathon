@@ -11,6 +11,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite+pysqlite:///{os.path.join(os.getcwd(), 'app.db')}"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
     app.config['REDIS_URL'] = 'redis://localhost'
+    app.config['SECRET_KEY'] = 'sadkfoha;osidfji0[paewnfg[as'
 
     # Initialize third-party
     db.init_app(app)
