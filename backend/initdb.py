@@ -6,7 +6,7 @@ from app.users.model import User
 with app.app_context():
     db.create_all()
     for i in range(0, 100):
-        b = Bet(f'Description {i}')
+        b = Bet(f'Description {i}', 'Yes', 'No')
         db.session.add(b)
     db.session.commit()
 

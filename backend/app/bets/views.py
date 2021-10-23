@@ -30,7 +30,9 @@ def update():
 def create():
     description = request.json.description
     approved = request.json.approved
-    b = Bet(description, approved)
+    option1 = request.json.option1
+    option2 = request.json.option2
+    b = Bet(description, approved, option1, option2)
     db.session.add(b)
     db.session.commit()
     update()
@@ -50,24 +52,24 @@ def get_bet(id):
     bet = bet.to_dict()
 
     stmt = select(
-        BetUserAssociation.status, BetUserAssociation.like
+        BetUserAssociation.decision, BetUserAssociation.like
     ).\
     join(User, BetUserAssociation.user_id == User.id).\
     filter(BetUserAssociation.bet_id == id)
 
-    nNeutral = 0
-    nFor = 0
-    nAgainst = 0
+    nUndecided = 0
+    nOption1 = 0
+    nOption2 = 0
     nLikes = 0
     for row in db.session.execute(stmt):
-        if row.status == BetUserAssociation.NEUTRAL: nNeutral += 1
-        if row.status == BetUserAssociation.FOR: nFor += 1
-        if row.status == BetUserAssociation.AGAINST: nAgainst += 1
+        if row.decision == BetUserAssociation.UNDECIDED: nUndecided += 1
+        if row.decision == BetUserAssociation.OPTION1: nOption1 += 1
+        if row.decision == BetUserAssociation.OPTION2: nOption2 += 1
         if row.like : nLikes += 1
 
-    bet['neutral'] = nNeutral
-    bet['for'] = nFor
-    bet['against'] = nAgainst
+    bet['undecided'] = nUndecided
+    bet['option1'] = nOption1
+    bet['option2'] = nOption2
     bet['likes'] = nLikes
     return wrap_response(bet)
 
