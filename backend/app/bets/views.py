@@ -45,7 +45,7 @@ def get_all():
 def set_id_approve(id):
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
-        return wrap_response("No bet for you")
+        return wrap_response({"success" : False})
     bet.approved = True
     db.session.add(bet)
     db.session.commit()
@@ -56,7 +56,7 @@ def set_id_approve(id):
 def set_id_unapprove(id):
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
-        return wrap_response("No bet for you")
+        return wrap_response({"success" : False})
     bet.approved = False
     db.session.add(bet)
     db.session.commit()
@@ -66,7 +66,7 @@ def set_id_unapprove(id):
 def set_id_like(id):
     betuser = BetUserAssociation.query.filter_by(user_id=session['user_id']).filter_by(bet_id=id).first() 
     if betuser is None:
-        return wrap_response("No bet for you")
+        return wrap_response({"success" : False})
     betuser.like = True
     db.session.add(betuser)
     db.session.commit()
@@ -76,7 +76,7 @@ def set_id_like(id):
 def set_id_unike(id):
     betuser = BetUserAssociation.query.filter_by(user_id=session['user_id']).filter_by(bet_id=id).first() 
     if betuser is None:
-        return wrap_response("No bet for you")
+        return wrap_response({"success" : False})
     betuser.like = False
     db.session.add(betuser)
     db.session.commit()
@@ -87,7 +87,7 @@ def set_id_unike(id):
 def get_bet(id):
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
-        return wrap_response("No bet for you")
+        return wrap_response({"success" : False})
     bet = bet.to_dict()
 
     stmt = select(
