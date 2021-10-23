@@ -1,6 +1,10 @@
+from sqlalchemy import select
+from sqlalchemy.orm import Bundle
 from flask import Blueprint, request
 from app.bets.model import Bet
+from app.users.model import User
 from app import db
+from app.bets.model import BetUserAssociation
 
 bets_blueprint = Blueprint(
     "bets", __name__
@@ -8,7 +12,8 @@ bets_blueprint = Blueprint(
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
-    b = Bet("Woohoo")
+    description = request.json.description
+    b = Bet(description)
     db.session.add(b)
     db.session.commit()
     return {'success': True}
@@ -20,9 +25,24 @@ def get_all():
     return bets if bets != {} else "I am empty inside"
 
 @bets_blueprint.route('/<id>', methods=['GET'])
-def get_bet(id):
+def get_bet(id):        
     bet = Bet.query.filter_by(id=id).first()
     if bet is None:
         return "No bet for you"
-    return bet.to_dict()
+    bet = bet.to_dict()
+
+    stmt = select(
+        Bundle("bet", Bet.id, Bet.description),
+        Bundle("user", User.id)
+    ).\
+    join(BetUserAssociation, BetUserAssociation.bet_id == Bet.id).\
+    join(User, BetUserAssociation.user_id == User.id).\
+    filter(Bet.id == id)
+    print(stmt)
+
+    users = []
+    for row in db.session.execute(stmt):
+        users.append(row.user[0])
+    bet['users'] = users
+    return bet
 

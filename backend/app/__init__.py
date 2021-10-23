@@ -14,10 +14,12 @@ def create_app():
     db.init_app(app)
 
     from app.bets import bets_blueprint
+    from app.users import users_blueprint
 
     # Register blueprints
     app.register_blueprint(bets_blueprint, url_prefix='/bets')
-
+    app.register_blueprint(users_blueprint, url_prefix='/users')
+    
     return app
     
 app = create_app()
