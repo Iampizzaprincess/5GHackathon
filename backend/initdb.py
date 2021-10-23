@@ -19,13 +19,11 @@ with app.app_context():
     u = None
     for row in db.session.execute(stmt):
         u = row[0]
-    print(u)
 
     stmt = select(Bet).where(Bet.id == 1)
     b = None
     for row in db.session.execute(stmt):
         b = row[0]
-    print(b)
 
     association = BetUserAssociation(b.id, u.id)
     db.session.add(association)

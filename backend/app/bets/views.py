@@ -22,7 +22,8 @@ def update():
 @bets_blueprint.route('/', methods=['POST'])
 def create():
     description = request.json.description
-    b = Bet(description)
+    approved = request.json.approved
+    b = Bet(description, approved)
     db.session.add(b)
     db.session.commit()
     return {'success': True}
@@ -41,17 +42,24 @@ def get_bet(id):
     bet = bet.to_dict()
 
     stmt = select(
-        Bundle("bet", Bet.id, Bet.description),
-        Bundle("user", User.id)
+        BetUserAssociation.status, BetUserAssociation.like
     ).\
-    join(BetUserAssociation, BetUserAssociation.bet_id == Bet.id).\
     join(User, BetUserAssociation.user_id == User.id).\
-    filter(Bet.id == id)
-    print(stmt)
+    filter(BetUserAssociation.bet_id == id)
 
-    users = []
+    nNeutral = 0
+    nFor = 0
+    nAgainst = 0
+    nLikes = 0
     for row in db.session.execute(stmt):
-        users.append(row.user[0])
-    bet['users'] = users
+        if row.status == BetUserAssociation.NEUTRAL: nNeutral += 1
+        if row.status == BetUserAssociation.FOR: nFor += 1
+        if row.status == BetUserAssociation.AGAINST: nAgainst += 1
+        if row.like : nLikes += 1
+
+    bet['neutral'] = nNeutral
+    bet['for'] = nFor
+    bet['against'] = nAgainst
+    bet['likes'] = nLikes
     return bet
 
