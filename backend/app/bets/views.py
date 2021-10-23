@@ -25,6 +25,7 @@ def create():
     b = Bet(description)
     db.session.add(b)
     db.session.commit()
+    update()
     return {'success': True}
 
 @bets_blueprint.route('/', methods=['GET'])
