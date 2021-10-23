@@ -8,6 +8,7 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite+pysqlite:///{os.path.join(os.getcwd(), 'app.db')}"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
     # Initialize third-party
     db.init_app(app)

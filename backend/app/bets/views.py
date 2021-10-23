@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from app.bets.model import Bet
+from app import db
 
 bets_blueprint = Blueprint(
     "bets", __name__
@@ -8,7 +9,7 @@ bets_blueprint = Blueprint(
 @bets_blueprint.route('/', methods=['POST'])
 def create():
     b = Bet("Woohoo")
-    db.session.add(v)
+    db.session.add(b)
     db.session.commit()
     return {'success': True}
 
