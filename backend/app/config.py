@@ -7,7 +7,7 @@ class Config(object):
 
 class Development(Config):
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.path.join(os.getcwd(), '')
+    SQLALCHEMY_DATABASE_URI = f"sqlite://{os.path.join(os.getcwd(), 'app.db')}"
 
 class Production(Config):
     pass

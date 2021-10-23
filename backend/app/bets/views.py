@@ -1,11 +1,11 @@
 from flask import Blueprint
-from app.bets.models import Bet
+from app.bets.model import Bet
 
 bets_blueprint = Blueprint(
     "bets", __name__
 )
 
-@bets_blueprint.route('/', methods=['POST']):
+@bets_blueprint.route('/', methods=['POST'])
 def create_bet():
     b = Bet("Woohoo")
     db.session.add(v)
@@ -13,7 +13,7 @@ def create_bet():
     return {'success': True}
 
 @bets_blueprint.route('/<id>', methods=['GET'])
-def get_bet():
+def get_bet(id):
     if not id:
         bets = Bet.query.all()
         return bets
