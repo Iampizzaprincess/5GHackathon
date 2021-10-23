@@ -1,10 +1,20 @@
 from flask import Blueprint, request
+import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 from app.bets.model import Bet
 from app import db
+from app import sse
+import datetime
+
 
 bets_blueprint = Blueprint(
     "bets", __name__
-)
+    )
+
+@bets_blueprint.route('/sseupdate')
+def update():
+    sse.publish(get_all())
+    return f"pushed update of all bets at {datetime.datetime.now()}"
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
