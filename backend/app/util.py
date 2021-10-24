@@ -7,5 +7,5 @@ def check_req_fields(fields, obj):
 def wrap_response(package):
     resp = make_response(package)
     resp.headers['Access-Control-Allow-Origin'] = '*'
-    resp.headers['Access-Control-Allow-Credentials'] = 'true'
+    resp.headers['Access-Control-Allow-Credentials'] = 'false'
     return resp

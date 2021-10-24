@@ -47,13 +47,14 @@ def push_bets_to_users():
 @bets_blueprint.route('/', methods=['POST'])
 def create():
     req_fields = ['description', 'option1', 'option2', 'min_wager']
-    missing = check_req_fields(req_fields, request.json)
+    missing = check_req_fields(req_fields, request.form)
+    print(request.form)
     if len(missing) != 0:
         return wrap_response({'error': "You're missing " + ', '.join(missing)})
-    description = request.json['description']
-    option1 = request.json['option1']
-    option2 = request.json['option2']
-    min_wager = float(request.json['min_wager'])
+    description = request.form['description']
+    option1 = request.form['option1']
+    option2 = request.form['option2']
+    min_wager = float(request.form['min_wager'])
     b = Bet(description, option1, option2, min_wager)
     db.session.add(b)
     db.session.commit()
@@ -63,15 +64,15 @@ def create():
 @bets_blueprint.route('/<id>/select-option', methods=["POST"])
 def select_option(id):
     req_fields = ['option', 'wager']
-    missing = check_req_fields(req_fields, request.json)
+    missing = check_req_fields(req_fields, request.form)
     if len(missing) != 0:
         return wrap_response({'error': "You're missing " + ", ".join(missing)})
     user_id = session['user_id']
     betuser = BetUserAssociation.query.filter_by(user_id=user_id).filter_by(bet_id=id).first()
     if betuser is None:
         betuser = BetUserAssociation(id, user_id)
-    betuser.option = int(request.json['option'])
-    betuser.wager = float(request.json['wager'])
+    betuser.option = int(request.form['option'])
+    betuser.wager = float(request.form['wager'])
     db.session.add(betuser)
     db.session.commit(betuser)
     return wrap_response({'success': True})
