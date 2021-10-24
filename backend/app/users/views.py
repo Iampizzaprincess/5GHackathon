@@ -12,7 +12,7 @@ users_blueprint = Blueprint(
 @users_blueprint.route('/login', methods=['POST'])
 def login():
     username = ''.join(random.choice(string.ascii_letters) for i in range(10))
-    firstname = request.form.get('name')
+    firstname = request.json.get('name')
     lastname = firstname
     u = User(username, firstname, lastname, 100.0)
     db.session.add(u)
