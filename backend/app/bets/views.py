@@ -72,7 +72,7 @@ def select_option(id):
     if new_wager < 0:
         return wrap_response({'error': f'Wager {new_wager} cannot be less than 0'})
     
-    if 0 < new_option or 2 < new_option:
+    if new_option < 0 or 2 < new_option:
         return wrap_response({'error': f'Option {new_option} is not 0, 1, or 2'})
 
     user_id = session['user_id']
@@ -144,7 +144,7 @@ def end_bet(id):
         return wrap_response({'error': "You're missing " + ', '.join(missing)})
 
     option = int(request.form['option'])
-    if 0 < option or 2 < option:
+    if option < 0 or 2 < option:
         return wrap_response({'error': f'Option {option} is not 0, 1, or 2'})
     
     bet = Bet.query.filter_by(id=id).first()
