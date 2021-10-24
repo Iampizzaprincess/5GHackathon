@@ -1,0 +1,4 @@
+/temp/
+*.db
+*.pyc
+backend/redis-stable/

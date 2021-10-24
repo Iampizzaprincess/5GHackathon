@@ -1,0 +1,42 @@
+from sqlalchemy import select
+from flask import Blueprint, request, session
+from app.util import wrap_response
+from app.model import User, Bet, BetUserAssociation
+from app import db
+import string
+import random
+
+users_blueprint = Blueprint(
+    "users", __name__
+)
+
+@users_blueprint.route('/login', methods=['POST'])
+def login():
+    username = ''.join(random.choice(string.ascii_letters) for i in range(10))
+    firstname = request.json.get('name')
+    lastname = firstname
+    u = User(username, firstname, lastname, 100.0)
+    db.session.add(u)
+    db.session.commit()
+    u = User.query.filter_by(username=username).first()
+    session['user_id'] = u.id
+    return wrap_response({'success': True, 'id':u.id})
+
+@users_blueprint.route('/', methods=['GET'])
+def get_all():
+    users = User.query.all()
+    users = {i:user.to_dict() for i,user in enumerate(users)}
+    return wrap_response(users)
+
+@users_blueprint.route('/<id>', methods=['GET'])
+def get_user(id):
+    user = User.query.filter_by(id=id).first()
+    if user is None:
+        return wrap_response("No user for you")
+    return wrap_response(user.to_dict())
+
+@users_blueprint.route('/<user_id>/bets', methods=['GET'])
+def get_bets(user_id):
+    associations = BetUserAssociation.query.filter_by(user_id=user_id)
+    return {str(a.bet_id):a.to_dict() for i, a in enumerate(associations)}
+
