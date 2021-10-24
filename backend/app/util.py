@@ -1,7 +1,7 @@
 from flask import make_response
 
 def check_req_fields(fields, obj):
-    missing = [i for i, field in enumerate(fields) if field not in obj]
+    missing = [i for i, field in enumerate(fields) if field not in obj.keys()]
     return missing
 
 def wrap_response(package):
