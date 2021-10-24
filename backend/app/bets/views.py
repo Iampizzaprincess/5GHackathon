@@ -17,7 +17,6 @@ bets_blueprint = Blueprint(
 @bets_blueprint.route('/sseupdate')
 def update():
     sse.publish(get_all())
-    return wrap_response(f"pushed update of all bets at {datetime.datetime.now()}")
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
