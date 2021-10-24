@@ -22,23 +22,26 @@ def update():
 
 def push_credit_to_user(user):
     d = {}
-    d['type'] = 'credit'
     d['credits'] = user.credits
+    packet = {'data':d}
+    packet['type'] = 'credits'
     sse.publish(d, channel=f"{user.id}")
 
 def push_notificaiton_to_users(bet):
-    bet['type'] = 'notification'
+    packet = {'data':bet}
+    packet['type'] = 'notification'
     for user in User.query.all():
         uid = user.id
-        sse.publish(bet, channel=f"{uid}")
+        sse.publish(packet, channel=f"{uid}")
 
 def push_bets_to_users():
     bets = _get_all()
     print(bets)
-    bets['type'] = 'bets'
+    packet = {'data':bets}
+    packet['type'] = 'bets'
     for user in User.query.all():
         uid = user.id
-        sse.publish(bets, channel=f"{uid}")
+        sse.publish(packet, channel=f"{uid}")
         print(url_for("sse.stream", channel=f"{uid}"))
 
 
@@ -103,6 +106,7 @@ def set_id_approve(id):
     bet.approved = True
     db.session.add(bet)
     db.session.commit()
+    push_bets_to_users()
     return wrap_response({'success':True})
 
 @bets_blueprint.route('/<id>/unapprove', methods=['POST'])
@@ -113,6 +117,7 @@ def set_id_unapprove(id):
     bet.approved = False
     db.session.add(bet)
     db.session.commit()
+    push_bets_to_users()
     return wrap_response({'success':True})
 
 @bets_blueprint.route('/<id>/like', methods=['POST'])
@@ -123,6 +128,7 @@ def set_id_like(id):
     betuser.like = True
     db.session.add(betuser)
     db.session.commit()
+    push_bets_to_users()
     return wrap_response({'success': True})
     
 @bets_blueprint.route('/<id>/unlike', methods=['POST'])
@@ -133,6 +139,7 @@ def set_id_unike(id):
     betuser.like = False
     db.session.add(betuser)
     db.session.commit()
+    push_bets_to_users()
     return wrap_response({'success': True})
 
 @bets_blueprint.route('/<id>/end', methods=['POST'])
@@ -186,6 +193,7 @@ def end_bet(id):
 
     for u in users:
         push_credit_to_user(u)
+    push_bets_to_users() # TODO : necessary???
     return wrap_response({'success': True})
 
 def _get_all():
