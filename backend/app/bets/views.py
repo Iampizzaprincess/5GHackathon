@@ -25,10 +25,10 @@ def create():
     missing = check_req_fields(req_fields, request.json)
     if len(missing) != 0:
         return wrap_response({'error': "You're missing " + ', '.join(missing)})
-    description = request.json.description
-    option1 = request.json.option1
-    option2 = request.json.option2
-    min_wager = float(request.json.min_wager)
+    description = request.json['description']
+    option1 = request.json['option1']
+    option2 = request.json['option2']
+    min_wager = float(request.json['min_wager'])
     b = Bet(description, option1, option2, min_wager)
     db.session.add(b)
     db.session.commit()
@@ -45,8 +45,8 @@ def select_option(id):
     betuser = BetUserAssociation.query.filter_by(user_id=user_id).filter_by(bet_id=id).first()
     if betuser is None:
         betuser = BetUserAssociation(id, user_id)
-    betuser.option = int(request.json.option)
-    betuser.wager = float(request.json.wager)
+    betuser.option = int(request.json['option'])
+    betuser.wager = float(request.json['wager'])
     db.session.add(betuser)
     db.session.commit(betuser)
     return wrap_response({'success': True})
