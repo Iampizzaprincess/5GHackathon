@@ -26,7 +26,7 @@ def push_credit_to_user(user):
     sse.publish(d, channel=f"{user.id}")
 
 def push_notificaiton_to_users(bet):
-    packet = {'data':bet}
+    packet = {'data':bet.to_dict()}
     packet['type'] = 'notification'
     for user in User.query.all():
         uid = user.id
@@ -217,3 +217,11 @@ def get_betuser():
     betusers = {i:betuser.to_dict() for i, betuser in enumerate(betusers)}
     return wrap_response(betusers)
 
+@bets_blueprint.route('/<id>/push', methods=["POST"])
+def push_bet(id):
+    b = Bet.query.filter_by(id=id).first()
+    b.approved = True
+    db.session.add(b)
+    db.session.commit()
+    push_notificaiton_to_users(b)
+    return {'success': True}
