@@ -167,17 +167,11 @@ def end_bet(id):
             if a.option == 1:
                 user.credits += reward
                 users.append(user)
-            elif a.option == 2:
-                user.credits -= a.wager
-                users.append(user)
     elif option == 2 and bet_data['nOption2'] != 0:
         reward = bet_data['pot'] / bet_data['nOption2']
         for a in associations:
             user = User.query.filter_by(id=a.user_id).first()
-            if a.option == 1:
-                user.credits -= a.wager
-                users.append(user)
-            elif a.option == 2:
+            if a.option == 2:
                 user.credits += reward
                 users.append(user)
 
@@ -186,7 +180,6 @@ def end_bet(id):
     
     bet.winner = option           
     db.session.add(bet)
-
     db.session.commit()
 
     for u in users:
