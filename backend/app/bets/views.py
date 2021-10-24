@@ -34,13 +34,19 @@ def push_notificaiton_to_users(bet):
 
 def push_bets_to_users():
     bets = _get_all()
-    print(bets)
     packet = {'data':bets}
     packet['type'] = 'bets'
     for user in User.query.all():
         uid = user.id
         sse.publish(packet, channel=f"{uid}")
-        print(url_for("sse.stream", channel=f"{uid}"))
+
+def push_bet_end_to_users():
+    bets = _get_all()
+    packet = {'data':bets}
+    packet['type'] = 'bet_end'
+    for user in User.query.all():
+        uid = user.id
+        sse.publish(packet, channel=f"{uid}")
 
 
 @bets_blueprint.route('/', methods=['POST'])
@@ -191,7 +197,7 @@ def end_bet(id):
 
     for u in users:
         push_credit_to_user(u)
-    push_bets_to_users() # TODO : necessary???
+    push_bet_end_to_users() # TODO : necessary???
     return wrap_response({'success': True})
 
 def _get_all():
