@@ -24,24 +24,22 @@ def push_credit_to_user(user):
     d = {}
     d['type'] = 'credit'
     d['credits'] = user.credits
-    resp = wrap_response(d)
-    sse.publish(resp, channel=f"{d}")
+    sse.publish(d, channel=f"{d}")
 
 def push_notificaiton_to_users(bet):
     bet['type'] = 'notification'
-    resp = wrap_response(bet)
     for user in User.query.all():
         uid = user.id
-        sse.publish(resp, channel=f"{uid}")
+        sse.publish(bet, channel=f"{uid}")
 
 def push_bets_to_users():
-    bets = {bet.id:bet.to_dict() for bet in bets}
+    bets = _get_all()
+    print(bets)
     bets['type'] = 'bets'
-    resp = wrap_response(bets)
     for user in User.query.all():
         uid = user.id
-        sse.publish(resp, channel=f"{uid}")
-        print(url_for("stream", channel=f"{uid}"))
+        sse.publish(bets, channel=f"{uid}")
+        print(url_for("sse.stream", channel=f"{uid}"))
 
 
 @bets_blueprint.route('/', methods=['POST'])
@@ -58,6 +56,7 @@ def create():
     b = Bet(description, option1, option2, min_wager)
     db.session.add(b)
     db.session.commit()
+    print('test')
     push_bets_to_users()
     return wrap_response({'success': True})
 
@@ -119,7 +118,7 @@ def set_id_unike(id):
 
 def _get_all():
     bets = Bet.query.all()
-    bets = {bet.id:bet.to_dict() for bet in bets}
+    bets = {str(bet.id):bet.to_dict() for bet in bets}
     return bets
 
 @bets_blueprint.route('/', methods=['GET'])
