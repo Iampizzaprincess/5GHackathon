@@ -20,6 +20,15 @@ class BetUserAssociation(db.Model):
         self.option = option
         self.like = like
         self.wager = wager
+    
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'bet_id': self.bet_id,
+            'option': self.option,
+            'like': self.like,
+            'wager': self.wager
+        }
 
 class Bet(db.Model):
     __tablename__ = 'bet'

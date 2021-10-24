@@ -25,7 +25,7 @@ def login():
 def get_all():
     users = User.query.all()
     users = {i:user.to_dict() for i,user in enumerate(users)}
-    return wrap_response(users if users != {} else "Empty")
+    return wrap_response(users)
 
 @users_blueprint.route('/<id>', methods=['GET'])
 def get_user(id):
