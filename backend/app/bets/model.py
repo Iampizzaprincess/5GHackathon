@@ -23,6 +23,9 @@ class BetUserAssociation(db.Model):
 
 class Bet(db.Model):
     __tablename__ = 'bet'
+    ONGOING = 0
+    OPTION1_WON = 1
+    OPTION2_WON = 2
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(255))
@@ -30,7 +33,7 @@ class Bet(db.Model):
     option1 = db.Column(db.String(255), nullable=False)
     option2 = db.Column(db.String(255), nullable=False)
     min_wager = db.Column(db.Float, default=0.00)
-    winner = db.Column(db.Integer)
+    winner = db.Column(db.Integer, default=-1)
 
     def __init__(self, description, option1, option2, min_wager=0.00, approved=False):
         self.description = description
@@ -56,7 +59,7 @@ class Bet(db.Model):
             if row.option == BetUserAssociation.OPTION1: nOption1 += 1
             if row.option == BetUserAssociation.OPTION2: nOption2 += 1
             if row.like : nLikes += 1
-            pot += row.wager
+            if row.option != BetUserAssociation.UNCHOSEN: pot += row.wager
 
         return {
             'id': self.id,
@@ -69,7 +72,8 @@ class Bet(db.Model):
             'nOption1': nOption1,
             'nOption2': nOption2,
             'nLikes': nLikes,
-            'pot': pot
+            'pot': pot,
+            'winner': self.winner
         }
 
     def __repr__(self):

@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.orm import Bundle
 from flask import Blueprint, request, session, url_for
 import datetime
@@ -24,7 +24,7 @@ def push_credit_to_user(user):
     d = {}
     d['type'] = 'credit'
     d['credits'] = user.credits
-    sse.publish(d, channel=f"{d}")
+    sse.publish(d, channel=f"{user.id}")
 
 def push_notificaiton_to_users(bet):
     bet['type'] = 'notification'
@@ -46,7 +46,6 @@ def push_bets_to_users():
 def create():
     req_fields = ['description', 'option1', 'option2', 'min_wager']
     missing = check_req_fields(req_fields, request.form)
-    print(request.form)
     if len(missing) != 0:
         return wrap_response({'error': "You're missing " + ', '.join(missing)})
     description = request.form['description']
@@ -66,14 +65,35 @@ def select_option(id):
     missing = check_req_fields(req_fields, request.form)
     if len(missing) != 0:
         return wrap_response({'error': "You're missing " + ", ".join(missing)})
+    
+    new_wager = float(request.form['wager'])
+    new_option = int(request.form['option'])
+
+    if new_wager < 0:
+        return wrap_response({'error': f'Wager {new_wager} cannot be less than 0'})
+    
+    if new_option > 0 or 2 < new_option:
+        return wrap_response({'error': f'Option {new_option} is not 0, 1, or 2'})
+
     user_id = session['user_id']
+    user = User().query.filter_by(id=user_id)
     betuser = BetUserAssociation.query.filter_by(user_id=user_id).filter_by(bet_id=id).first()
     if betuser is None:
         betuser = BetUserAssociation(id, user_id)
-    betuser.option = int(request.form['option'])
-    betuser.wager = float(request.form['wager'])
+
+    if new_option == 0:
+        user.credits = user.credits + betuser.wager
+        betuser.wager = 0.00
+    elif new_option != 0:
+        user.credits  = user.credits + betuser.wager - new_wager
+        betuser.wager = new_wager
+    betuser.option = new_option
+
     db.session.add(betuser)
+    db.session.add(user)
+    db.session.commit(user)
     db.session.commit(betuser)
+
     return wrap_response({'success': True})
 
 @bets_blueprint.route('/<id>/approve', methods=['POST'])
@@ -114,6 +134,59 @@ def set_id_unike(id):
     betuser.like = False
     db.session.add(betuser)
     db.session.commit()
+    return wrap_response({'success': True})
+
+@bets_blueprint.route('/<id>/end', methods=['POST'])
+def end_bet(id):
+    req_fields = ['option']
+    missing = check_req_fields(req_fields, request.form)
+    if len(missing) != 0:
+        return wrap_response({'error': "You're missing " + ', '.join(missing)})
+
+    option = int(request.form['option'])
+    if option > 0 or 2 < option:
+        return wrap_response({'error': f'Option {option} is not 0, 1, or 2'})
+    
+    bet = Bet.query.filter_by(id=id).first()
+    bet_data = bet.to_dict()
+    associations = BetUserAssociation.query.filter_by(bet_id=id)
+    users = [] 
+    if option == 0:
+        for a in associations:
+            user = User.query.filter_by(id=a.user_id)
+            user.credits += a.wager
+            users.append(user)
+    elif option == 1:
+        reward = bet_data.pot / bet_data.nOption1
+        for a in associations:
+            user = User.query.filter_by(id=a.user_id)
+            if a.option == 1:
+                user.credits += reward
+                users.append(user)
+            elif a.option == 2:
+                user.credits -= a.wager
+                users.append(user)
+    elif option == 2:
+        reward = bet_data.pot / bet_data.nOption2
+        for a in associations:
+            user = User.query.filter_by(id=a.user_id)
+            if a.option == 1:
+                user.credits -= a.wager
+                users.append(user)
+            elif a.option == 2:
+                user.credits += reward
+                users.append(user)
+
+    for u in users:
+        db.session.add(u)
+    
+    bet.winner = option           
+    db.session.add(bet)
+    
+    db.session.commit()
+
+    for u in users:
+        push_credit_to_user(u)
     return wrap_response({'success': True})
 
 def _get_all():
