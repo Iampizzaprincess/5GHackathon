@@ -2,10 +2,8 @@ from sqlalchemy import update
 from sqlalchemy.orm import Bundle
 from flask import Blueprint, request, session, url_for
 import datetime
-from app.bets.model import Bet
-from app.users.model import User
+from app.model import Bet, User, BetUserAssociation
 from app import db
-from app.bets.model import BetUserAssociation
 from app import sse
 from app.util import check_req_fields, wrap_response
 import datetime
