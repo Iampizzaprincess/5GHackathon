@@ -156,7 +156,7 @@ def end_bet(id):
     bet = Bet.query.filter_by(id=id).first()
     bet_data = bet.to_dict()
     associations = BetUserAssociation.query.filter_by(bet_id=id)
-    users = [] 
+    users = []
     if option == 0:
         for a in associations:
             user = User.query.filter_by(id=a.user_id).first()
@@ -212,4 +212,10 @@ def get_bet(id):
         return wrap_response({"success" : False})
     bet = bet.to_dict()
     return wrap_response(bet)
+
+@bets_blueprint.route('/betusers/', methods=['GET'])
+def get_betuser():
+    betusers = BetUserAssociation.query.all()
+    betusers = {i:betuser.to_dict() for i, betuser in enumerate(betusers)}
+    return wrap_response(betusers)
 
