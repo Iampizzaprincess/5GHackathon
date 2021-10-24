@@ -19,7 +19,7 @@ def login():
     db.session.commit()
     u = User.query.filter_by(username=username).first()
     session['user_id'] = u.id
-    return wrap_response({'success': True})
+    return wrap_response({'success': True, 'id':u.id})
 
 @users_blueprint.route('/', methods=['GET'])
 def get_all():
