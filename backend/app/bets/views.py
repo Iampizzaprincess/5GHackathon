@@ -16,7 +16,7 @@ bets_blueprint = Blueprint(
 
 @bets_blueprint.route('/sseupdate')
 def update():
-    sse.publish(get_all())
+    sse.publish(_get_all())
 
 @bets_blueprint.route('/', methods=['POST'])
 def create():
@@ -90,11 +90,14 @@ def set_id_unike(id):
     db.session.commit()
     return wrap_response({'success': True})
 
-@bets_blueprint.route('/', methods=['GET'])
-def get_all():
+def _get_all():
     bets = Bet.query.all()
     bets = {bet.id:bet.to_dict() for bet in bets}
-    return wrap_response(bets)
+    return bets
+
+@bets_blueprint.route('/', methods=['GET'])
+def get_all():
+    return wrap_response(_get_all())
 
 @bets_blueprint.route('/<id>', methods=['GET'])
 def get_bet(id):
