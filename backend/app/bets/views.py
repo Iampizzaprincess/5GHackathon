@@ -76,7 +76,7 @@ def select_option(id):
         return wrap_response({'error': f'Option {new_option} is not 0, 1, or 2'})
 
     user_id = session['user_id']
-    user = User().query.filter_by(id=user_id)
+    user = User.query.filter_by(id=user_id).first()
     betuser = BetUserAssociation.query.filter_by(user_id=user_id).filter_by(bet_id=id).first()
     if betuser is None:
         betuser = BetUserAssociation(id, user_id)
@@ -91,8 +91,7 @@ def select_option(id):
 
     db.session.add(betuser)
     db.session.add(user)
-    db.session.commit(user)
-    db.session.commit(betuser)
+    db.session.commit()
 
     return wrap_response({'success': True})
 
@@ -153,23 +152,23 @@ def end_bet(id):
     users = [] 
     if option == 0:
         for a in associations:
-            user = User.query.filter_by(id=a.user_id)
+            user = User.query.filter_by(id=a.user_id).first()
             user.credits += a.wager
             users.append(user)
-    elif option == 1:
-        reward = bet_data.pot / bet_data.nOption1
+    elif option == 1 and bet_data['nOption1'] != 0:
+        reward = bet_data['pot'] / bet_data['nOption1']
         for a in associations:
-            user = User.query.filter_by(id=a.user_id)
+            user = User.query.filter_by(id=a.user_id).first()
             if a.option == 1:
                 user.credits += reward
                 users.append(user)
             elif a.option == 2:
                 user.credits -= a.wager
                 users.append(user)
-    elif option == 2:
-        reward = bet_data.pot / bet_data.nOption2
+    elif option == 2 and bet_data['nOption2'] != 0:
+        reward = bet_data['pot'] / bet_data['nOption2']
         for a in associations:
-            user = User.query.filter_by(id=a.user_id)
+            user = User.query.filter_by(id=a.user_id).first()
             if a.option == 1:
                 user.credits -= a.wager
                 users.append(user)
