@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Bundle
-from flask import Blueprint, request, session
+from flask import Blueprint, request, session, url_for
 import datetime
 from app.bets.model import Bet
 from app.users.model import User
@@ -19,6 +19,32 @@ def update():
     sse.publish(get_all())
     return wrap_response(f"pushed update of all bets at {datetime.datetime.now()}")
 
+#def push_betstats_to_user() TODO : betstats
+
+def push_credit_to_user(user):
+    d = {}
+    d['type'] = 'credit'
+    d['credits'] = user.credits
+    resp = wrap_response(d)
+    sse.publish(resp, channel=f"{d}")
+
+def push_notificaiton_to_users(bet):
+    bet['type'] = 'notification'
+    resp = wrap_response(bet)
+    for user in User.query.all():
+        uid = user.id
+        sse.publish(resp, channel=f"{uid}")
+
+def push_bets_to_users():
+    bets = {bet.id:bet.to_dict() for bet in bets}
+    bets['type'] = 'bets'
+    resp = wrap_response(bets)
+    for user in User.query.all():
+        uid = user.id
+        sse.publish(resp, channel=f"{uid}")
+        print(url_for("stream", channel=f"{uid}"))
+
+
 @bets_blueprint.route('/', methods=['POST'])
 def create():
     req_fields = ['description', 'approved', 'option1', 'option2']
@@ -32,7 +58,7 @@ def create():
     b = Bet(description, approved, option1, option2)
     db.session.add(b)
     db.session.commit()
-    update()
+    push_bets_to_users()
     return wrap_response({'success': True})
 
 @bets_blueprint.route('/', methods=['GET'])
