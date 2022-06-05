@@ -4,7 +4,7 @@
 
 ### Members
 Moiz Rasheed
-Daniyall Rasheed
+Daniyaal Rasheed
 Jackie Malayter
 Ethan Campbell
 
